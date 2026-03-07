@@ -23,6 +23,7 @@ import os
 import sys
 from pathlib import Path
 
+import numpy as np
 import torch
 import yaml
 from transformers import (
@@ -42,6 +43,49 @@ from data.crossword_data import ClueAnswerDataset, ClueAnswerCollator
 def load_config(path: str) -> dict:
     with open(path, "r") as f:
         return yaml.safe_load(f)
+
+
+def make_compute_metrics(tokenizer):
+    """Return a compute_metrics function that decodes predictions and
+    computes exact-match accuracy and character-level accuracy."""
+
+    def compute_metrics(eval_preds):
+        preds, labels = eval_preds
+        # preds are logits — take argmax
+        if isinstance(preds, tuple):
+            preds = preds[0]
+        pred_ids = np.argmax(preds, axis=-1)
+
+        # Replace -100 in labels (padding) so the tokenizer can decode
+        labels = np.where(labels != -100, labels, tokenizer.pad_token_id)
+
+        decoded_preds = tokenizer.batch_decode(pred_ids, skip_special_tokens=True)
+        decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
+
+        # Strip whitespace
+        decoded_preds = [p.strip() for p in decoded_preds]
+        decoded_labels = [l.strip() for l in decoded_labels]
+
+        # Exact-match accuracy
+        exact_matches = sum(p == l for p, l in zip(decoded_preds, decoded_labels))
+        exact_match_acc = exact_matches / max(len(decoded_preds), 1)
+
+        # Character-level accuracy (averaged per example)
+        char_accs = []
+        for p, l in zip(decoded_preds, decoded_labels):
+            if len(l) == 0:
+                char_accs.append(1.0 if len(p) == 0 else 0.0)
+            else:
+                matches = sum(pc == lc for pc, lc in zip(p, l))
+                char_accs.append(matches / len(l))
+        char_acc = np.mean(char_accs) if char_accs else 0.0
+
+        return {
+            "exact_match": exact_match_acc,
+            "char_accuracy": char_acc,
+        }
+
+    return compute_metrics
 
 
 def main():
@@ -164,6 +208,7 @@ def main():
         train_dataset=train_dataset,
         eval_dataset=val_dataset,
         data_collator=collator,
+        compute_metrics=make_compute_metrics(tokenizer),
         callbacks=[EarlyStoppingCallback(early_stopping_patience=5)],
     )
 
