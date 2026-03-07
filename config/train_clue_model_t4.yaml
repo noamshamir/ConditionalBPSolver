@@ -1,0 +1,34 @@
+# Training config for T4 GPUs (16GB VRAM)
+# ByT5-base (582M params) fits with fp16 + reduced batch size
+
+# Model
+model: "google/byt5-base"
+
+# Data
+train_data: "data/clue_answer_pairs/train.jsonl"
+val_data: "data/clue_answer_pairs/val.jsonl"
+max_answer_len: 25
+max_input_len: 256
+max_target_len: 32
+online_augment: true
+
+# Training — smaller batch for 16GB VRAM
+output_dir: "checkpoints/clue_answerer"
+epochs: 10
+batch_size: 8 # 8 fits on T4 with fp16
+gradient_accumulation_steps: 16 # effective batch = 128 (same as A100 config)
+lr: 3.0e-4
+weight_decay: 0.01
+warmup_steps: 500
+
+# Precision — T4 does NOT support bf16
+fp16: true
+bf16: false
+
+# Saving / eval
+save_steps: 1000
+eval_steps: 500
+logging_steps: 100
+
+# W&B
+wandb_project: "conditional-bp-solver"

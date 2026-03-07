@@ -1,0 +1,36 @@
+# Training config for the Conditional Clue Answerer
+# Fine-tunes ByT5-base on (clue + pattern) → answer pairs
+
+# Model
+model: "google/byt5-base" # 582M params — comparable to Berkeley's BERT DPR + ByT5 reranker combined
+
+# Data
+train_data: "data/clue_answer_pairs/train.jsonl"
+val_data: "data/clue_answer_pairs/val.jsonl"
+max_answer_len: 25
+max_input_len: 256
+max_target_len: 32
+online_augment: true # generate fresh patterns on-the-fly during training
+
+# Training
+output_dir: "checkpoints/clue_answerer"
+epochs: 10
+batch_size: 32
+gradient_accumulation_steps: 4 # effective batch = 128
+lr: 3.0e-4
+weight_decay: 0.01
+warmup_steps: 500
+
+# Precision — pick ONE of fp16/bf16
+# For T4 (16GB): fp16: true, bf16: false, batch_size: 8, gradient_accumulation_steps: 16
+# For A100/H100:  fp16: false, bf16: true,  batch_size: 32, gradient_accumulation_steps: 4
+fp16: false
+bf16: true
+
+# Saving / eval
+save_steps: 1000
+eval_steps: 500
+logging_steps: 100
+
+# W&B
+wandb_project: "conditional-bp-solver"

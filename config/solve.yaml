@@ -1,0 +1,25 @@
+# Solving config — controls BP parameters, model paths, and iterative improvement
+
+# Model checkpoints
+model_checkpoint: "checkpoints/clue_answerer/final" # trained conditional clue answerer
+reranker_checkpoint: "google/byt5-small" # T5 reranker (same as Berkeley for fair comparison)
+
+# Answer vocabulary for iterative improvement
+answer_set_path: "data/clue_answer_pairs/answer_vocab.txt"
+
+# Device
+device: "cuda:0"
+
+# BP parameters
+num_iters: 10 # total BP iterations (Berkeley default: 10)
+requery_every:
+    3 # re-query neural model every N iterations
+    # This is our key innovation — Berkeley never re-queries
+
+# Candidate generation
+max_candidates: 500 # max candidates per word slot
+num_beams: 50 # beam width for generating candidates
+belief_threshold: 0.6 # confidence threshold for revealing letters in pattern
+
+# Iterative improvement (same as Berkeley)
+iterative_improvement_steps: 5 # number of local search rounds after BP
