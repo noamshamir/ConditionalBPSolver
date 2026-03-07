@@ -25,7 +25,7 @@ import random
 import string
 from pathlib import Path
 from typing import List, Tuple
-
+from tqdm.notebook import tqdm
 from solver.utils import puz_to_json, preprocess_clue
 
 
@@ -171,7 +171,7 @@ def main():
     for split_name, files in [("train", train_files), ("val", list(val_files))]:
         out_path = os.path.join(args.output_dir, f"{split_name}.jsonl")
         with open(out_path, "w") as f:
-            for puz_path in files:
+            for puz_path in tqdm(files, desc=split_name):
                 pairs = extract_clue_answer_pairs(puz_path)
                 stats[f"{split_name}_pairs"] += len(pairs)
                 for clue, answer in pairs:
