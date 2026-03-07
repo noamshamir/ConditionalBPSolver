@@ -59,6 +59,8 @@ def main():
     parser.add_argument("--fp16", action="store_true", default=None)
     parser.add_argument("--bf16", action="store_true", default=None)
     parser.add_argument("--wandb-project", type=str, default=None)
+    parser.add_argument("--resume-from-checkpoint", type=str, default=None,
+                        help="Path to a checkpoint directory to resume training from")
     args = parser.parse_args()
 
     # Load config file
@@ -166,7 +168,10 @@ def main():
     )
 
     # Train
-    trainer.train()
+    resume_ckpt = args.resume_from_checkpoint
+    if resume_ckpt:
+        print(f"Resuming from checkpoint: {resume_ckpt}")
+    trainer.train(resume_from_checkpoint=resume_ckpt)
 
     # Save final checkpoint
     final_dir = os.path.join(output_dir, "final")
