@@ -133,7 +133,8 @@ def main():
 
     use_fp16 = args.fp16 if args.fp16 is not None else cfg.get("fp16", False)
     use_bf16 = args.bf16 if args.bf16 is not None else cfg.get("bf16", True)
-    wandb_project = args.wandb_project or cfg.get("wandb_project", "conditional-bp-solver")
+    wandb_project = args.wandb_project if args.wandb_project is not None else cfg.get("wandb_project", "")
+    wandb_project = wandb_project or ""  # treat empty string as disabled
 
     print(f"Model:       {model_name}")
     print(f"Train data:  {train_data}")

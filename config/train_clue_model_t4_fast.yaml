@@ -15,7 +15,7 @@ online_augment: true # adds variety even with fewer static augmentations
 
 # Training — byt5-small in fp32 needs smaller batch to fit 16GB VRAM
 output_dir: "checkpoints/clue_answerer"
-epochs: 3
+epochs: 2
 batch_size: 4 # fp32 uses 2x memory vs fp16
 gradient_accumulation_steps: 16 # effective batch = 64 (same as before)
 lr: 5.0e-4
@@ -32,4 +32,4 @@ eval_steps: 2000
 logging_steps: 100
 
 # W&B
-wandb_project: "conditional-bp-solver"
+wandb_project: "" # set to "conditional-bp-solver" after running: wandb login
