@@ -13,17 +13,17 @@ max_input_len: 256
 max_target_len: 32
 online_augment: true # adds variety even with fewer static augmentations
 
-# Training — byt5-small fits batch=16 on T4 with fp16
+# Training — byt5-small in fp32 needs smaller batch to fit 16GB VRAM
 output_dir: "checkpoints/clue_answerer"
 epochs: 3
-batch_size: 16
-gradient_accumulation_steps: 4 # effective batch = 64
-lr: 5.0e-4 # slightly higher LR for smaller model + fewer steps
+batch_size: 4 # fp32 uses 2x memory vs fp16
+gradient_accumulation_steps: 16 # effective batch = 64 (same as before)
+lr: 5.0e-4
 weight_decay: 0.01
 warmup_steps: 200
 
-# Precision — T4 does NOT support bf16
-fp16: true
+# Precision — ByT5 overflows in fp16 on T4, must use fp32
+fp16: false
 bf16: false
 
 # Saving / eval
